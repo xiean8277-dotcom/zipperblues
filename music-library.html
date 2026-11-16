@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>音乐学习库 · Music Learning Library</title>
+<style>
+  :root{
+    --bg:#faf7f2; --fg:#1f2d28; --muted:#7b8a83;
+    --card:#ffffff; --border:#e8e0d3;
+    --primary:#2f6b5e; --accent:#c97b3a;
+    --link:#2f6b5e;
+    --cat-theory:#7c5295;
+    --cat-instr:#2f6b5e;
+    --cat-prod:#c97b3a;
+    --cat-hist:#a8324e;
+    --cat-sheet:#3a6b8a;
+    --cat-ear:#8a6b1f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg); color:var(--fg); line-height:1.6;
+    padding:0 0 60px;
+  }
+  header{
+    background:linear-gradient(135deg,#1f2d28 0%,#2f6b5e 100%);
+    color:#fff; padding:48px 24px 36px; text-align:center;
+  }
+  header h1{font-size:32px; font-weight:700; letter-spacing:.5px}
+  header .sub{margin-top:8px; opacity:.85; font-size:14px}
+  header .stat{margin-top:18px; font-size:13px; opacity:.7}
+  .container{max-width:1100px; margin:-28px auto 0; padding:0 20px; position:relative}
+  .toolbar{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:14px 16px; box-shadow:0 4px 14px rgba(0,0,0,.04);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  }
+  .search{
+    flex:1 1 220px; min-width:200px;
+    padding:10px 14px; border:1px solid var(--border);
+    border-radius:8px; font-size:14px; background:#fff;
+  }
+  .search:focus{outline:none; border-color:var(--primary)}
+  .chips{display:flex; flex-wrap:wrap; gap:6px}
+  .chip{
+    padding:6px 12px; border-radius:18px; font-size:12px;
+    border:1px solid var(--border); background:#fff; cursor:pointer;
+    transition:all .15s; user-select:none;
+  }
+  .chip:hover{border-color:var(--primary)}
+  .chip.active{background:var(--primary); color:#fff; border-color:var(--primary)}
+  .type-row{
+    display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;
+    padding-top:10px; border-top:1px dashed var(--border);
+  }
+  .type-chip{font-size:11px; padding:4px 10px; border-radius:14px; background:#f4ece0; cursor:pointer; user-select:none}
+  .type-chip.active{background:var(--accent); color:#fff}
+  .meta{font-size:12px; color:var(--muted); margin-left:auto; padding:6px 0}
+  .grid{
+    margin-top:20px; display:grid; gap:14px;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  }
+  .card{
+    background:var(--card); border:1px solid var(--border);
+    border-radius:10px; padding:16px 18px;
+    transition:transform .15s, box-shadow .15s;
+    display:flex; flex-direction:column;
+  }
+  .card:hover{transform:translateY(-2px); box-shadow:0 6px 18px rgba(0,0,0,.08)}
+  .card .top{display:flex; align-items:center; gap:8px; margin-bottom:8px}
+  .cat-tag{
+    font-size:11px; font-weight:600; padding:2px 8px; border-radius:10px; color:#fff;
+  }
+  .cat-theory{background:var(--cat-theory)}
+  .cat-instr{background:var(--cat-instr)}
+  .cat-prod{background:var(--cat-prod)}
+  .cat-hist{background:var(--cat-hist)}
+  .cat-sheet{background:var(--cat-sheet)}
+  .cat-ear{background:var(--cat-ear)}
+  .type-tag{font-size:11px; color:var(--muted); margin-left:auto}
+  .card h3{font-size:16px; margin-bottom:6px; font-weight:600}
+  .card p{font-size:13px; color:var(--muted); flex:1}
+  .card .link{
+    margin-top:12px; font-size:13px; color:var(--link);
+    text-decoration:none; font-weight:500;
+  }
+  .card .link:hover{text-decoration:underline}
+  .empty{text-align:center; padding:60px 20px; color:var(--muted)}
+  footer{
+    margin-top:40px; text-align:center; font-size:12px; color:var(--muted);
+  }
+  @media(max-width:600px){
+    header{padding:32px 16px 28px}
+    header h1{font-size:24px}
+    .container{padding:0 12px}
+    .toolbar{padding:12px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>音乐学习库</h1>
+  <div class="sub">Music Learning Library · 精选乐理、乐器、制作、历史、谱子、听音资源</div>
+  <div class="stat" id="stat"></div>
+</header>
+<div class="container">
+  <div class="toolbar">
+    <input type="text" id="search" class="search" placeholder="搜索名称 / 描述 / 关键词">
+    <div class="chips" id="chips"></div>
+    <div class="type-row" id="types"></div>
+    <div class="meta" id="meta"></div>
+  </div>
+  <div class="grid" id="grid"></div>
+</div>
+<footer>数据本地化 · 没有外部追踪 · 可在源码里直接增删条目</footer>
+
+<script>
+const CATS=[
+  {id:'theory',label:'乐理',cls:'cat-theory'},
+  {id:'instr',label:'乐器',cls:'cat-instr'},
+  {id:'prod',label:'制作',cls:'cat-prod'},
+  {id:'hist',label:'历史',cls:'cat-hist'},
+  {id:'sheet',label:'谱子',cls:'cat-sheet'},
+  {id:'ear',label:'听音',cls:'cat-ear'},
+];
+const TYPES=[
+  {id:'video',label:'视频'},
+  {id:'article',label:'文章'},
+  {id:'tool',label:'工具'},
+  {id:'sheet',label:'谱库'},
+  {id:'audio',label:'音频'},
+  {id:'book',label:'书籍'},
+];
+const RESOURCES=[
+  // 乐理
+  {name:'Musictheory.net',cat:'theory',type:'tool',desc:'最经典的互动式乐理教程，含音符、和弦、音阶训练与可交互钢琴键盘。',url:'https://www.musictheory.net'},
+  {name:'Teoria',cat:'theory',type:'article',desc:'系统化乐理参考资料，从基础三和弦到高级和声学都覆盖。',url:'https://www.teoria.com'},
+  {name:'Dave Conservatoire',cat:'theory',type:'video',desc:'免费视频乐理课，从零基础到调性音乐分析。',url:'https://www.daveconservatoire.org'},
+  {name:'Hooktheory',cat:'theory',type:'tool',desc:'用流行歌曲学和弦走向，Hookpad 可视化作曲工具。',url:'https://www.hooktheory.com'},
+  {name:'Open Music Theory',cat:'theory',type:'book',desc:'开放式乐理教材，适合大学级别系统学习。',url:'https://viva.pressbooks.pub/openmusictheory'},
+  // 乐器
+  {name:'Justin Guitar',cat:'instr',type:'video',desc:'全球最流行的免费吉他课程，从入门到进阶分级清晰。',url:'https://www.justinguitar.com'},
+  {name:'Piano-ology',cat:'instr',type:'article',desc:'钢琴学习研究站，强调技术与音乐性的平衡。',url:'https://piano-ology.com'},
+  {name:'StudyBass',cat:'instr',type:'article',desc:'贝斯系统课程，从指板到 groove 都有讲解。',url:'https://www.studybass.com'},
+  {name:'Muted.io',cat:'instr',type:'tool',desc:'吉他/尤克里里/钢琴和弦可视化工具，一键查指法。',url:'https://muted.io'},
+  // 制作
+  {name:'Sound On Sound',cat:'prod',type:'article',desc:'录音/混音/制作领域最权威的杂志与教程库。',url:'https://www.soundonsound.com'},
+  {name:'Audacity',cat:'prod',type:'tool',desc:'免费开源音频编辑器，适合录音、剪辑、入门制作。',url:'https://www.audacityteam.org'},
+  {name:'Sonic Pi',cat:'prod',type:'tool',desc:'用代码实时作曲的工具，适合想结合编程的制作人。',url:'https://sonic-pi.net'},
+  {name:'BandLab',cat:'prod',type:'tool',desc:'免费云端 DAW，浏览器里就能编曲、合作。',url:'https://www.bandlab.com'},
+  // 历史
+  {name:'Yale: Listening to Music',cat:'hist',type:'video',desc:'Craig Wright 教授经典公开课，西方古典音乐欣赏入门。',url:'https://oyc.yale.edu/music/musi-112'},
+  {name:'AllMusic',cat:'hist',type:'article',desc:'流派/艺人/专辑百科，研究流行音乐史首选。',url:'https://www.allmusic.com'},
+  {name:'Musicmap',cat:'hist',type:'article',desc:'流行音乐流派关系图，可视化探索音乐演变。',url:'https://www.musicmap.ultimate-guitar.com'},
+  // 谱子
+  {name:'IMSLP',cat:'sheet',type:'sheet',desc:'最大的公有领域古典乐谱库，Petrucci 项目。',url:'https://imslp.org'},
+  {name:'Mutopia Project',cat:'sheet',type:'sheet',desc:'重新排版的免费古典乐谱（LilyPond）。',url:'https://www.mutopiaproject.org'},
+  {name:'MuseScore',cat:'sheet',type:'tool',desc:'开源制谱软件 + 海量社区谱子。',url:'https://musescore.org'},
+  {name:'8notes',cat:'sheet',type:'sheet',desc:'各乐器初级到中级免费谱，分类细致。',url:'https://www.8notes.com'},
+  // 听音
+  {name:'SoundGym',cat:'ear',type:'tool',desc:'像游戏一样训练频率/音色/效果识别。',url:'https://www.soundgym.com'},
+  {name:'EarMaster',cat:'ear',type:'tool',desc:'综合听音训练老牌软件，含节奏与视唱。',url:'https://www.earmaster.com'},
+  {name:'Good-Ear',cat:'ear',type:'tool',desc:'简洁在线听音练习，无需注册。',url:'https://www.good-ear.com'},
+];
+
+const grid=document.getElementById('grid');
+const chipsEl=document.getElementById('chips');
+const typesEl=document.getElementById('types');
+const searchEl=document.getElementById('search');
+const metaEl=document.getElementById('meta');
+const statEl=document.getElementById('stat');
+
+let activeCat=null, activeType=null;
+
+CATS.forEach(c=>{
+  const el=document.createElement('div');
+  el.className='chip'; el.textContent=c.label; el.dataset.cat=c.id;
+  el.onclick=()=>{
+    activeCat = activeCat===c.id ? null : c.id;
+    [...chipsEl.children].forEach(x=>x.classList.toggle('active', x.dataset.cat===activeCat));
+    render();
+  };
+  chipsEl.appendChild(el);
+});
+TYPES.forEach(t=>{
+  const el=document.createElement('div');
+  el.className='type-chip'; el.textContent=t.label; el.dataset.type=t.id;
+  el.onclick=()=>{
+    activeType = activeType===t.id ? null : t.id;
+    [...typesEl.children].forEach(x=>x.classList.toggle('active', x.dataset.type===activeType));
+    render();
+  };
+  typesEl.appendChild(el);
+});
+
+function catInfo(id){return CATS.find(c=>c.id===id)}
+function typeLabel(id){return (TYPES.find(t=>t.id===id)||{}).label||id}
+
+function render(){
+  const q=searchEl.value.trim().toLowerCase();
+  const list=RESOURCES.filter(r=>{
+    if(activeCat && r.cat!==activeCat) return false;
+    if(activeType && r.type!==activeType) return false;
+    if(q && !(r.name.toLowerCase().includes(q)||r.desc.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  grid.innerHTML='';
+  if(list.length===0){
+    grid.innerHTML='<div class="empty">没有匹配的资源 ✗</div>';
+  }else{
+    list.forEach(r=>{
+      const ci=catInfo(r.cat);
+      const card=document.createElement('a');
+      card.className='card';
+      card.href=r.url; card.target='_blank'; card.rel='noopener';
+      card.innerHTML=`
+        <div class="top">
+          <span class="cat-tag ${ci.cls}">${ci.label}</span>
+          <span class="type-tag">${typeLabel(r.type)}</span>
+        </div>
+        <h3>${r.name}</h3>
+        <p>${r.desc}</p>
+        <span class="link">访问 →</span>
+      `;
+      grid.appendChild(card);
+    });
+  }
+  metaEl.textContent=`${list.length} / ${RESOURCES.length} 条`;
+}
+
+searchEl.addEventListener('input',render);
+statEl.textContent=`共 ${RESOURCES.length} 条精选资源 · ${CATS.length} 大分类`;
+render();
+</script>
+</body>
+</html>

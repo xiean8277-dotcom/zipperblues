@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学习作品库 · Portfolio</title>
+<style>
+  :root{
+    --bg:#f4f6fb; --fg:#1d2130; --muted:#6b7280;
+    --card:#ffffff; --border:#e5e7eb;
+    --primary:#3b5bdb; --primary-dark:#2a44b8;
+    --accent:#f59f00;
+    --ok:#2f9e6b; --warn:#d4a13a; --danger:#c84545;
+    --info:#3a6b8a;
+    --subj-1:#7c5295; --subj-2:#2f6b5e; --subj-3:#c97b3a;
+    --subj-4:#a8324e; --subj-5:#3a6b8a; --subj-6:#8a6b1f;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg); color:var(--fg); line-height:1.6; padding-bottom:60px;
+  }
+  header{
+    background:linear-gradient(135deg,#2a44b8 0%,#3b5bdb 100%);
+    color:#fff; padding:40px 24px 32px;
+  }
+  .head-wrap{max-width:1100px; margin:0 auto}
+  header h1{font-size:28px; font-weight:700}
+  header .sub{margin-top:6px; opacity:.85; font-size:14px}
+  .stats{margin-top:20px; display:flex; gap:10px; flex-wrap:wrap}
+  .stat-box{
+    background:rgba(255,255,255,.15); padding:10px 18px; border-radius:10px;
+    text-align:center; min-width:80px; flex:1; max-width:140px;
+  }
+  .stat-box .n{font-size:22px; font-weight:700; display:block}
+  .stat-box .l{font-size:11px; opacity:.85; text-transform:uppercase; letter-spacing:.5px}
+  .container{max-width:1100px; margin:-28px auto 0; padding:0 20px; position:relative}
+  .toolbar{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:14px 16px; box-shadow:0 4px 14px rgba(0,0,0,.04);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  }
+  .search{
+    flex:1 1 220px; min-width:200px; padding:9px 14px;
+    border:1px solid var(--border); border-radius:8px; font-size:14px;
+  }
+  .search:focus{outline:none; border-color:var(--primary)}
+  select, .btn{
+    padding:9px 12px; border:1px solid var(--border); border-radius:8px;
+    background:#fff; font-size:13px; cursor:pointer; color:var(--fg);
+  }
+  select:focus{outline:none; border-color:var(--primary)}
+  .btn-primary{background:var(--primary); color:#fff; border-color:var(--primary); font-weight:500}
+  .btn-primary:hover{background:var(--primary-dark)}
+  .btn-ghost{background:transparent}
+  .btn-ghost:hover{background:#eef1fb}
+  .btn-row{display:flex; gap:6px; flex-wrap:wrap}
+  .tabs{display:flex; gap:4px; background:#eef1fb; padding:4px; border-radius:10px}
+  .tab{
+    padding:7px 14px; border-radius:7px; cursor:pointer; font-size:13px;
+    color:var(--muted); transition:all .15s; user-select:none;
+  }
+  .tab.active{background:#fff; color:var(--primary); font-weight:600; box-shadow:0 1px 3px rgba(0,0,0,.08)}
+  .add-form{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:18px; margin-top:14px; display:none;
+  }
+  .add-form.show{display:block}
+  .form-row{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); margin-bottom:10px}
+  .form-row > div{display:flex; flex-direction:column; gap:4px}
+  label{font-size:11px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:.5px}
+  input,textarea,select{
+    padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit;
+  }
+  input:focus,textarea:focus,select:focus{outline:none; border-color:var(--primary)}
+  textarea{resize:vertical; min-height:60px}
+  .form-actions{display:flex; gap:8px; margin-top:6px}
+  .grid{
+    margin-top:18px; display:grid; gap:14px;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  }
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:12px;
+    overflow:hidden; transition:transform .15s, box-shadow .15s;
+    cursor:pointer; position:relative;
+  }
+  .card:hover{transform:translateY(-2px); box-shadow:0 6px 20px rgba(0,0,0,.08)}
+  .card-cover{
+    height:100px; display:flex; align-items:center; justify-content:center;
+    font-size:40px; color:rgba(255,255,255,.85); font-weight:700;
+  }
+  .card-body{padding:14px 16px 16px}
+  .card .top{display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; align-items:center}
+  .status-tag{
+    font-size:11px; font-weight:600; padding:2px 10px; border-radius:10px; color:#fff;
+  }
+  .s-pending{background:var(--muted)}
+  .s-submitted{background:var(--ok)}
+  .s-late{background:var(--warn)}
+  .s-graded{background:var(--info)}
+  .s-rejected{background:var(--danger)}
+  .subj-tag{
+    font-size:11px; padding:2px 10px; border-radius:10px;
+    background:#eef1fb; color:var(--primary-dark); font-weight:600;
+  }
+  .score-tag{
+    font-size:14px; font-weight:700; padding:2px 10px; border-radius:10px;
+    background:linear-gradient(135deg,#3b5bdb,#5b7cdb); color:#fff; margin-left:auto;
+  }
+  .card h3{font-size:15px; font-weight:600; margin-bottom:4px}
+  .card .sub{font-size:12px; color:var(--muted); margin-bottom:8px}
+  .card .meta{font-size:11px; color:var(--muted); display:flex; gap:8px; flex-wrap:wrap}
+  .card .meta span::before{content:'· '; opacity:.5}
+  .card .meta span:first-child::before{content:''}
+  .actions-bar{display:flex; gap:4px; margin-top:10px; padding-top:10px; border-top:1px dashed var(--border)}
+  .icon-btn{
+    flex:1; padding:6px; border:1px solid var(--border); background:#fff;
+    border-radius:6px; cursor:pointer; font-size:12px; color:var(--muted);
+    transition:all .15s;
+  }
+  .icon-btn:hover{background:#eef1fb; color:var(--primary); border-color:var(--primary)}
+  .empty{text-align:center; padding:60px 20px; color:var(--muted)}
+  .empty .big{font-size:48px; opacity:.4; margin-bottom:8px}
+
+  /* 详情弹窗 */
+  .modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.5);
+    display:none; align-items:center; justify-content:center; z-index:100;
+    padding:20px;
+  }
+  .modal-overlay.show{display:flex}
+  .modal{
+    background:#fff; border-radius:14px; max-width:560px; width:100%;
+    max-height:85vh; overflow-y:auto; padding:28px; position:relative;
+  }
+  .modal .close{
+    position:absolute; top:14px; right:16px; width:32px; height:32px;
+    border:none; background:#f4f6fb; border-radius:50%; cursor:pointer;
+    font-size:18px; color:var(--muted);
+  }
+  .modal .close:hover{background:#e5e7eb}
+  .modal h2{font-size:20px; margin-bottom:4px; padding-right:40px}
+  .modal .m-sub{color:var(--muted); font-size:13px; margin-bottom:16px}
+  .detail-row{display:grid; grid-template-columns:80px 1fr; gap:8px 16px; margin-bottom:6px; font-size:13px}
+  .detail-row dt{color:var(--muted)}
+  .detail-row dd{word-break:break-word}
+  .teacher-note{
+    margin-top:14px; padding:12px 14px; background:#fffbf0; border-left:3px solid var(--accent);
+    border-radius:4px; font-size:13px; white-space:pre-wrap;
+  }
+  .attachment-list{margin-top:10px; display:flex; flex-direction:column; gap:6px}
+  .attachment-list a{
+    display:block; padding:8px 12px; background:#eef1fb; border-radius:6px;
+    text-decoration:none; color:var(--primary); font-size:13px;
+  }
+  .attachment-list a:hover{background:#e0e5fb}
+  .detail-actions{display:flex; gap:8px; margin-top:18px; padding-top:14px; border-top:1px solid var(--border)}
+  .subj-color-0 .card-cover{background:linear-gradient(135deg,#7c5295,#9b7ab0)}
+  .subj-color-1 .card-cover{background:linear-gradient(135deg,#2f6b5e,#4a9a87)}
+  .subj-color-2 .card-cover{background:linear-gradient(135deg,#c97b3a,#e09a5e)}
+  .subj-color-3 .card-cover{background:linear-gradient(135deg,#a8324e,#c8556e)}
+  .subj-color-4 .card-cover{background:linear-gradient(135deg,#3a6b8a,#5c8aa8)}
+  .subj-color-5 .card-cover{background:linear-gradient(135deg,#8a6b1f,#aa893e)}
+  .subj-color-6 .card-cover{background:linear-gradient(135deg,#5b4cd1,#7a6ee0)}
+  .subj-color-7 .card-cover{background:linear-gradient(135deg,#2a44b8,#4a6bdb)}
+
+  /* 列表视图 */
+  .list-view{display:flex; flex-direction:column; gap:10px; margin-top:18px}
+  .list-item{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:14px 16px; display:flex; gap:14px; align-items:center; cursor:pointer;
+    transition:box-shadow .15s;
+  }
+  .list-item:hover{box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .list-item .li-badge{
+    width:42px; height:42px; border-radius:8px; display:flex;
+    align-items:center; justify-content:center; color:#fff; font-size:18px; font-weight:700; flex-shrink:0;
+  }
+  .list-item .li-body{flex:1; min-width:0}
+  .list-item h3{font-size:14px; font-weight:600; margin-bottom:2px}
+  .list-item .li-meta{font-size:12px; color:var(--muted)}
+  .list-item .li-right{display:flex; flex-direction:column; align-items:flex-end; gap:4px; flex-shrink:0}
+
+  @media(max-width:600px){
+    header{padding:28px 16px 24px}
+    header h1{font-size:22px}
+    .container{padding:0 12px}
+    .toolbar{padding:12px}
+    .tabs{width:100%; justify-content:space-between}
+    .stat-box{min-width:60px; padding:8px 12px}
+    .stat-box .n{font-size:18px}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-wrap">
+    <h1>学习作品库</h1>
+    <div class="sub">Portfolio · 提交作业、追踪状态、展示成果</div>
+    <div class="stats" id="stats"></div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="toolbar">
+    <input type="text" id="search" class="search" placeholder="搜索标题 / 作业名 / 科目">
+    <div class="tabs" id="tabs">
+      <div class="tab active" data-view="grid">作品展示</div>
+      <div class="tab" data-view="list">提交管理</div>
+    </div>
+    <select id="f-subject"><option value="">全部科目</option></select>
+    <select id="f-status">
+      <option value="">全部状态</option>
+      <option value="pending">待提交</option>
+      <option value="submitted">已提交</option>
+      <option value="late">迟交</option>
+      <option value="graded">已批改</option>
+      <option value="rejected">被退回</option>
+    </select>
+    <select id="f-semester"><option value="">全部学期</option></select>
+    <select id="sort">
+      <option value="submitted_desc">最近提交</option>
+      <option value="submitted_asc">最早提交</option>
+      <option value="score_desc">分数高→低</option>
+      <option value="score_asc">分数低→高</option>
+      <option value="subject">按科目</option>
+      <option value="deadline">按截止日</option>
+    </select>
+    <div class="btn-row" style="margin-left:auto">
+      <button class="btn btn-ghost" id="export-btn">导出</button>
+      <button class="btn btn-ghost" id="import-btn">导入</button>
+      <button class="btn btn-primary" id="add-btn">+ 新建作品</button>
+    </div>
+  </div>
+
+  <div class="add-form" id="form">
+    <div class="form-row">
+      <div>
+        <label>作品标题 *</label>
+        <input type="text" id="i-title" placeholder="例：第三章 函数的应用 - 思维导图">
+      </div>
+      <div>
+        <label>科目 *</label>
+        <input type="text" id="i-subject" list="subjects" placeholder="选/填">
+        <datalist id="subjects">
+          <option value="语文"><option value="数学"><option value="英语">
+          <option value="物理"><option value="化学"><option value="生物">
+          <option value="政治"><option value="历史"><option value="地理">
+          <option value="信息技术"><option value="音乐"><option value="美术">
+          <option value="综合实践"><option value="其它">
+        </datalist>
+      </div>
+      <div>
+        <label>作业名称</label>
+        <input type="text" id="i-assignment" placeholder="例：第三单元作业">
+      </div>
+      <div>
+        <label>学期</label>
+        <input type="text" id="i-semester" placeholder="例：2026秋 / 高一上">
+      </div>
+    </div>
+    <div class="form-row">
+      <div>
+        <label>截止日期</label>
+        <input type="date" id="i-deadline">
+      </div>
+      <div>
+        <label>提交日期</label>
+        <input type="date" id="i-submitted-date">
+      </div>
+      <div>
+        <label>状态</label>
+        <select id="i-status">
+          <option value="pending">待提交</option>
+          <option value="submitted">已提交</option>
+          <option value="late">迟交</option>
+          <option value="graded">已批改</option>
+          <option value="rejected">被退回</option>
+        </select>
+      </div>
+      <div>
+        <label>分数（如适用）</label>
+        <input type="text" id="i-score" placeholder="例：92 / 优 / A+">
+      </div>
+    </div>
+    <div class="form-row">
+      <div style="grid-column:1/-1">
+        <label>附件链接（每行一个 URL，可写作品地址或网盘链接）</label>
+        <textarea id="i-attachments" placeholder="https://...  https://..."></textarea>
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label>作品说明 / 老师评语</label>
+      <textarea id="i-notes" placeholder="作品内容、思路、老师批注等"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="save-btn">保存</button>
+      <button class="btn btn-ghost" id="cancel-btn">取消</button>
+    </div>
+  </div>
+
+  <div id="view-area"></div>
+</div>
+
+<input type="file" id="file-input" accept=".json" style="display:none">
+
+<div class="modal-overlay" id="modal">
+  <div class="modal" id="modal-content"></div>
+</div>
+
+<script>
+const KEY='portfolio_v1';
+let items=JSON.parse(localStorage.getItem(KEY)||'[]');
+let editingId=null;
+let currentView='grid';
+
+const $=id=>document.getElementById(id);
+const statusLabel={pending:'待提交',submitted:'已提交',late:'迟交',graded:'已批改',rejected:'被退回'};
+const firstChar=s=>(s||'').charAt(0).toUpperCase()||'?';
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(items))}
+
+function isOverdue(it){return it.status==='pending' && it.deadline && new Date(it.deadline)<today()}
+
+function renderStats(){
+  const total=items.length;
+  const graded=items.filter(i=>i.status==='graded').length;
+  const submitted=items.filter(i=>['submitted','graded','late'].includes(i.status)).length;
+  const pendingOverdue=items.filter(isOverdue).length;
+  $('stats').innerHTML=[
+    ['作品',total],['已提交',submitted],['已批改',graded],['已逾期',pendingOverdue]
+  ].map(([l,n])=>`<div class="stat-box"><span class="n">${n}</span><span class="l">${l}</span></div>`).join('');
+}
+
+function renderFilters(){
+  const subs=[...new Set(items.map(i=>i.subject).filter(Boolean))].sort();
+  const sems=[...new Set(items.map(i=>i.semester).filter(Boolean))].sort();
+  const cs=$('f-subject').value, ss=$('f-semester').value;
+  $('f-subject').innerHTML='<option value="">全部科目</option>'+subs.map(s=>`<option value="${s}"${s===cs?' selected':''}>${s}</option>`).join('');
+  $('f-semester').innerHTML='<option value="">全部学期</option>'+sems.map(s=>`<option value="${s}"${s===ss?' selected':''}>${s}</option>`).join('');
+}
+
+function filterItems(){
+  const q=$('search').value.trim().toLowerCase();
+  const fs=$('f-status').value, fsub=$('f-subject').value, fsem=$('f-semester').value, sort=$('sort').value;
+  let list=items.filter(i=>{
+    if(fs&&i.status!==fs) return false;
+    if(fsub&&i.subject!==fsub) return false;
+    if(fsem&&i.semester!==fsem) return false;
+    if(q&&!(i.title.toLowerCase().includes(q)||(i.assignment||'').toLowerCase().includes(q)||(i.subject||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  list.sort((a,b)=>{
+    switch(sort){
+      case 'submitted_desc': return (b.submittedDate||'').localeCompare(a.submittedDate||'');
+      case 'submitted_asc': return (a.submittedDate||'').localeCompare(b.submittedDate||'');
+      case 'score_desc': case 'score_asc': {
+        const av=parseFloat((a.score||'').match(/-?\d+/)?.[0])||0;
+        const bv=parseFloat((b.score||'').match(/-?\d+/)?.[0])||0;
+        return sort==='score_desc'?bv-av:av-bv;
+      }
+      case 'subject': return (a.subject||'').localeCompare(b.subject||'');
+      case 'deadline': return (a.deadline||'9999').localeCompare(b.deadline||'9999');
+    }
+    return b.created-a.created;
+  });
+  return list;
+}
+
+function render(){
+  renderStats(); renderFilters();
+  const list=filterItems();
+  const area=$('view-area');
+  if(list.length===0){
+    area.innerHTML=`<div class="empty"><div class="big">📚</div>还没有作品，点右上角 + 新建一个吧</div>`;
+    return;
+  }
+  if(currentView==='grid') renderGrid(list,area);
+  else renderList(list,area);
+}
+
+function subjColorClass(subj){
+  const n=[...(subj||'')].reduce((a,c)=>a+c.charCodeAt(0),0);
+  return `subj-color-${n%8}`;
+}
+
+function renderGrid(list,area){
+  area.className='grid';
+  area.innerHTML=list.map(it=>{
+    const cc=subjColorClass(it.subject);
+    return `
+    <div class="${cc}">
+    <div class="card" data-id="${it.id}">
+      <div class="card-cover">${escapeHtml(firstChar(it.subject))}</div>
+      <div class="card-body">
+        <div class="top">
+          <span class="status-tag s-${it.status}">${statusLabel[it.status]}</span>
+          ${it.subject?`<span class="subj-tag">${escapeHtml(it.subject)}</span>`:''}
+          ${it.score?`<span class="score-tag">${escapeHtml(it.score)}</span>`:''}
+        </div>
+        <h3>${escapeHtml(it.title)}</h3>
+        ${it.assignment?`<div class="sub">${escapeHtml(it.assignment)}</div>`:''}
+        <div class="meta">
+          ${it.semester?`<span>${escapeHtml(it.semester)}</span>`:''}
+          ${it.deadline?`<span>截止 ${fmtDate(it.deadline)}</span>`:''}
+          ${it.submittedDate?`<span>提交 ${fmtDate(it.submittedDate)}</span>`:''}
+        </div>
+        <div class="actions-bar">
+          <button class="icon-btn" data-act="detail">查看详情</button>
+          <button class="icon-btn" data-act="edit">编辑</button>
+          <button class="icon-btn" data-act="del">删除</button>
+        </div>
+      </div>
+    </div>
+    </div>`;
+  }).join('');
+}
+
+function renderList(list,area){
+  area.className='list-view';
+  area.innerHTML=list.map(it=>{
+    const cc=subjColorClass(it.subject);
+    return `
+    <div class="list-item ${cc}" data-id="${it.id}">
+      <div class="li-badge">${escapeHtml(firstChar(it.subject))}</div>
+      <div class="li-body">
+        <h3>${escapeHtml(it.title)}</h3>
+        <div class="li-meta">
+          ${it.subject?`${escapeHtml(it.subject)} · `:''}
+          ${it.assignment?`${escapeHtml(it.assignment)} · `:''}
+          ${it.semester?`${escapeHtml(it.semester)}`:''}
+        </div>
+      </div>
+      <div class="li-right">
+        <span class="status-tag s-${it.status}">${statusLabel[it.status]}</span>
+        ${it.score?`<span class="score-tag" style="font-size:12px;padding:1px 8px">${escapeHtml(it.score)}</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function fmtDate(d){return d?new Date(d).toLocaleDateString('zh-CN',{month:'numeric',day:'numeric'}):''}
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function openDetail(id){
+  const it=items.find(x=>x.id===id); if(!it)return;
+  const atts=(it.attachments||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  $('modal-content').innerHTML=`
+    <button class="close" onclick="document.getElementById('modal').classList.remove('show')">×</button>
+    <h2>${escapeHtml(it.title)}</h2>
+    <div class="m-sub">
+      ${it.subject?escapeHtml(it.subject)+' · ':''}
+      ${it.semester?escapeHtml(it.semester)+' · ':''}
+      ${statusLabel[it.status]}
+      ${it.score?' · '+escapeHtml(it.score):''}
+    </div>
+    ${it.assignment?`<dl class="detail-row"><dt>作业</dt><dd>${escapeHtml(it.assignment)}</dd></dl>`:''}
+    ${it.deadline?`<dl class="detail-row"><dt>截止</dt><dd>${fmtDate(it.deadline)}</dd></dl>`:''}
+    ${it.submittedDate?`<dl class="detail-row"><dt>提交</dt><dd>${fmtDate(it.submittedDate)}</dd></dl>`:''}
+    ${atts.length?`<dl class="detail-row"><dt>附件</dt><dd><div class="attachment-list">${atts.map(a=>`<a href="${escapeHtml(a)}" target="_blank" rel="noopener">🔗 ${escapeHtml(a)}</a>`).join('')}</div></dd></dl>`:''}
+    ${it.notes?`<div class="teacher-note">${escapeHtml(it.notes)}</div>`:''}
+    <div class="detail-actions">
+      <button class="btn btn-primary" data-act="edit">编辑</button>
+      <button class="btn btn-ghost" data-act="submitted">标记已提交</button>
+      <button class="btn btn-ghost" data-act="graded">标记已批改</button>
+      <button class="btn btn-ghost" data-act="del" style="color:var(--danger);border-color:#f0c0c0">删除</button>
+    </div>
+  `;
+  $('modal').classList.add('show');
+  $('modal-content').querySelector('[data-act="edit"]').onclick=()=>{$('modal').classList.remove('show');openForm(id)};
+  $('modal-content').querySelector('[data-act="del"]').onclick=()=>{if(confirm('删除这条作品？')){items=items.filter(x=>x.id!==id);save();render();$('modal').classList.remove('show')}};
+  $('modal-content').querySelector('[data-act="submitted"]').onclick=()=>{const x=items.find(i=>i.id===id);x.status='submitted';x.submittedDate=x.submittedDate||new Date().toISOString().slice(0,10);save();render();openDetail(id)};
+  $('modal-content').querySelector('[data-act="graded"]').onclick=()=>{const x=items.find(i=>i.id===id);x.status='graded';save();render();openDetail(id)};
+}
+
+function openForm(id){
+  editingId=id||null;
+  const f=$('form'); f.classList.add('show');
+  if(id){
+    const it=items.find(x=>x.id===id);
+    $('i-title').value=it.title; $('i-subject').value=it.subject||'';
+    $('i-assignment').value=it.assignment||''; $('i-semester').value=it.semester||'';
+    $('i-deadline').value=it.deadline||''; $('i-submitted-date').value=it.submittedDate||'';
+    $('i-status').value=it.status; $('i-score').value=it.score||'';
+    $('i-attachments').value=it.attachments||''; $('i-notes').value=it.notes||'';
+  }else{
+    $('i-title').value=''; $('i-subject').value=''; $('i-assignment').value='';
+    $('i-semester').value=''; $('i-deadline').value=''; $('i-submitted-date').value='';
+    $('i-status').value='pending'; $('i-score').value='';
+    $('i-attachments').value=''; $('i-notes').value='';
+  }
+  $('i-title').focus();
+  f.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeForm(){$('form').classList.remove('show'); editingId=null}
+
+function saveItem(){
+  const title=$('i-title').value.trim();
+  const subject=$('i-subject').value.trim();
+  if(!title||!subject){alert('请填写标题和科目');return}
+  const data={
+    title, subject,
+    assignment:$('i-assignment').value.trim(),
+    semester:$('i-semester').value.trim(),
+    deadline:$('i-deadline').value,
+    submittedDate:$('i-submitted-date').value,
+    status:$('i-status').value,
+    score:$('i-score').value.trim(),
+    attachments:$('i-attachments').value.trim(),
+    notes:$('i-notes').value.trim()
+  };
+  if(editingId){
+    Object.assign(items.find(x=>x.id===editingId), data);
+  }else{
+    items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), created:Date.now(), ...data});
+  }
+  save(); closeForm(); render();
+}
+
+function handleItemClick(e){
+  const itemEl=e.target.closest('[data-id]'); if(!itemEl)return;
+  const id=itemEl.dataset.id;
+  const act=e.target.dataset.act;
+  if(currentView==='grid'){
+    if(act==='detail') openDetail(id);
+    else if(act==='edit') openForm(id);
+    else if(act==='del'){if(confirm('删除这条作品？')){items=items.filter(x=>x.id!==id);save();render()}}
+    else openDetail(id);
+  }else{
+    openDetail(id);
+  }
+}
+
+$('view-area').addEventListener('click',handleItemClick);
+
+$('add-btn').onclick=()=>openForm();
+$('save-btn').onclick=saveItem;
+$('cancel-btn').onclick=closeForm;
+$('search').oninput=render;
+$('f-status').onchange=render;
+$('f-subject').onchange=render;
+$('f-semester').onchange=render;
+$('sort').onchange=render;
+$('i-title').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)saveItem()});
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+  currentView=t.dataset.view; render();
+});
+
+$('modal').addEventListener('click',e=>{if(e.target.id==='modal')$('modal').classList.remove('show')});
+
+$('export-btn').onclick=()=>{
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`portfolio-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+};
+$('import-btn').onclick=()=>$('file-input').click();
+$('file-input').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const arr=JSON.parse(r.result);
+      if(!Array.isArray(arr))throw 0;
+      if(confirm(`导入 ${arr.length} 条？将合并到现有数据。`)){
+        const ids=new Set(items.map(i=>i.id));
+        arr.forEach(x=>{if(x.id&&!ids.has(x.id))items.push(x)});
+        save(); render();
+      }
+    }catch(err){alert('文件格式错误')}
+  };
+  r.readAsText(f);
+};
+
+// 预置示例数据（首次打开时）
+if(items.length===0){
+  items=[
+    {id:'demo1',created:Date.now(),title:'函数的应用思维导图',subject:'数学',assignment:'第三章作业',semester:'2026秋',deadline:'2026-10-20',submittedDate:'2026-10-18',status:'graded',score:'92',attachments:'https://example.com/math1.png',notes:'覆盖所有函数类型，层次清晰。继续加油！'},
+    {id:'demo2',created:Date.now()-1000,title:'荷塘月色 · 读后感',subject:'语文',assignment:'第一单元随笔',semester:'2026秋',deadline:'2026-10-15',submittedDate:'2026-10-16',status:'graded',score:'88',attachments:'',notes:'有自己的见解，描写细腻。迟交一次，下次注意。'},
+    {id:'demo3',created:Date.now()-2000,title:'贪吃蛇游戏',subject:'信息技术',assignment:'Canvas 项目',semester:'2026秋',deadline:'2026-11-01',submittedDate:'',status:'pending',score:'',attachments:'',notes:''},
+  ];
+  save();
+}
+
+render();
+</script>
+</body>
+</html>

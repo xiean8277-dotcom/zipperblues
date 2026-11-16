@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>作业本 · Homework Tracker</title>
+<style>
+  :root{
+    --bg:#f5f3fb; --fg:#1f1d2e; --muted:#6b6680;
+    --card:#ffffff; --border:#e6e2f5;
+    --primary:#5b4cd1; --primary-dark:#4438a8;
+    --accent:#e07c4a;
+    --ok:#2f9e6b; --warn:#d4a13a; --danger:#c84545;
+    --pri-high:#c84545; --pri-mid:#d4a13a; --pri-low:#7b8a83;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'PingFang SC','Microsoft YaHei',sans-serif;
+    background:var(--bg); color:var(--fg); line-height:1.6; padding-bottom:60px;
+  }
+  header{
+    background:linear-gradient(135deg,#4438a8 0%,#5b4cd1 100%);
+    color:#fff; padding:36px 24px 30px;
+  }
+  .head-wrap{max-width:960px; margin:0 auto; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px}
+  header h1{font-size:26px; font-weight:700}
+  header .sub{margin-top:4px; opacity:.8; font-size:13px}
+  .stats{display:flex; gap:8px; flex-wrap:wrap}
+  .stat-box{
+    background:rgba(255,255,255,.15); padding:8px 14px; border-radius:8px;
+    text-align:center; min-width:60px;
+  }
+  .stat-box .n{font-size:20px; font-weight:700; display:block}
+  .stat-box .l{font-size:10px; opacity:.85; text-transform:uppercase; letter-spacing:.5px}
+  .container{max-width:960px; margin:-24px auto 0; padding:0 20px}
+  .toolbar{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:14px; box-shadow:0 4px 14px rgba(0,0,0,.04);
+    display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  }
+  .search{
+    flex:1 1 200px; min-width:180px; padding:9px 14px;
+    border:1px solid var(--border); border-radius:8px; font-size:14px;
+  }
+  .search:focus{outline:none; border-color:var(--primary)}
+  select, .btn{
+    padding:9px 12px; border:1px solid var(--border); border-radius:8px;
+    background:#fff; font-size:13px; cursor:pointer; color:var(--fg);
+  }
+  select:focus{outline:none; border-color:var(--primary)}
+  .btn-primary{
+    background:var(--primary); color:#fff; border-color:var(--primary); font-weight:500;
+  }
+  .btn-primary:hover{background:var(--primary-dark)}
+  .btn-ghost{background:transparent}
+  .btn-ghost:hover{background:#f0edfa}
+  .btn-row{display:flex; gap:6px; flex-wrap:wrap}
+  .add-form{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:16px; margin-top:14px; display:none;
+  }
+  .add-form.show{display:block}
+  .form-row{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); margin-bottom:10px}
+  .form-row > div{display:flex; flex-direction:column; gap:4px}
+  label{font-size:11px; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:.5px}
+  input,textarea,select{
+    padding:8px 10px; border:1px solid var(--border); border-radius:6px; font-size:13px; font-family:inherit;
+  }
+  input:focus,textarea:focus,select:focus{outline:none; border-color:var(--primary)}
+  textarea{resize:vertical; min-height:60px}
+  .form-actions{display:flex; gap:8px; margin-top:6px}
+  .list{margin-top:18px; display:flex; flex-direction:column; gap:10px}
+  .item{
+    background:var(--card); border:1px solid var(--border); border-radius:10px;
+    padding:14px 16px; display:flex; gap:12px; align-items:flex-start;
+    transition:box-shadow .15s, transform .15s;
+  }
+  .item:hover{box-shadow:0 4px 14px rgba(0,0,0,.06)}
+  .item.done{opacity:.6; background:#fbfafc}
+  .item.overdue{border-left:3px solid var(--danger)}
+  .check{
+    width:22px; height:22px; border:2px solid var(--border); border-radius:50%;
+    cursor:pointer; flex-shrink:0; margin-top:2px; transition:all .15s;
+    display:flex; align-items:center; justify-content:center; color:#fff; font-size:13px;
+  }
+  .check.checked{background:var(--ok); border-color:var(--ok)}
+  .check:hover{border-color:var(--primary)}
+  .body{flex:1; min-width:0}
+  .top-row{display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:4px}
+  .subj{
+    font-size:11px; padding:2px 8px; border-radius:10px;
+    background:#ece8fb; color:var(--primary-dark); font-weight:600;
+  }
+  .pri{
+    font-size:11px; padding:2px 8px; border-radius:10px; color:#fff; font-weight:600;
+  }
+  .pri-high{background:var(--pri-high)}
+  .pri-mid{background:var(--pri-mid)}
+  .pri-low{background:var(--pri-low)}
+  .due{font-size:12px; color:var(--muted); margin-left:auto}
+  .due.overdue-text{color:var(--danger); font-weight:600}
+  .due.soon{color:var(--warn); font-weight:600}
+  .item h3{font-size:15px; font-weight:600; margin-bottom:4px}
+  .item.done h3{text-decoration:line-through}
+  .item p{font-size:13px; color:var(--muted); white-space:pre-wrap}
+  .actions{display:flex; gap:4px; flex-shrink:0}
+  .icon-btn{
+    width:28px; height:28px; border:1px solid var(--border); background:#fff;
+    border-radius:6px; cursor:pointer; font-size:13px; color:var(--muted);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:#f0edfa; color:var(--primary)}
+  .empty{text-align:center; padding:50px 20px; color:var(--muted)}
+  .empty .big{font-size:42px; opacity:.4; margin-bottom:8px}
+  @media(max-width:600px){
+    header{padding:24px 16px}
+    .head-wrap{flex-direction:column; align-items:flex-start}
+    .stats{width:100%}
+    .stat-box{flex:1}
+    .container{padding:0 12px}
+    .toolbar{padding:12px}
+    .due{margin-left:0}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-wrap">
+    <div>
+      <h1>作业本</h1>
+      <div class="sub">Homework Tracker · 本地保存 · 不上传任何数据</div>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="toolbar">
+    <input type="text" id="search" class="search" placeholder="搜索标题或备注">
+    <select id="f-subject"><option value="">全部科目</option></select>
+    <select id="f-status">
+      <option value="">全部状态</option>
+      <option value="pending">待完成</option>
+      <option value="done">已完成</option>
+      <option value="overdue">已逾期</option>
+    </select>
+    <select id="f-priority">
+      <option value="">全部优先级</option>
+      <option value="high">高</option>
+      <option value="mid">中</option>
+      <option value="low">低</option>
+    </select>
+    <select id="sort">
+      <option value="due">按截止日</option>
+      <option value="priority">按优先级</option>
+      <option value="subject">按科目</option>
+      <option value="created">按添加时间</option>
+    </select>
+    <div class="btn-row">
+      <button class="btn btn-ghost" id="export-btn">导出</button>
+      <button class="btn btn-ghost" id="import-btn">导入</button>
+      <button class="btn btn-primary" id="add-btn">+ 新建</button>
+    </div>
+  </div>
+
+  <div class="add-form" id="form">
+    <div class="form-row">
+      <div>
+        <label>标题</label>
+        <input type="text" id="i-title" placeholder="例：数学卷子 P12-13">
+      </div>
+      <div>
+        <label>科目</label>
+        <input type="text" id="i-subject" list="subjects" placeholder="选/填">
+        <datalist id="subjects">
+          <option value="语文"><option value="数学"><option value="英语">
+          <option value="物理"><option value="化学"><option value="生物">
+          <option value="政治"><option value="历史"><option value="地理">
+          <option value="信息技术"><option value="其它">
+        </datalist>
+      </div>
+      <div>
+        <label>截止日期</label>
+        <input type="date" id="i-due">
+      </div>
+      <div>
+        <label>优先级</label>
+        <select id="i-priority">
+          <option value="mid">中</option>
+          <option value="high">高</option>
+          <option value="low">低</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-bottom:10px">
+      <label>备注（可选）</label>
+      <textarea id="i-notes" placeholder="题号、要求、参考资料等"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="save-btn">保存</button>
+      <button class="btn btn-ghost" id="cancel-btn">取消</button>
+    </div>
+  </div>
+
+  <div class="list" id="list"></div>
+</div>
+
+<input type="file" id="file-input" accept=".json" style="display:none">
+
+<script>
+const KEY='homework_v1';
+let items=JSON.parse(localStorage.getItem(KEY)||'[]');
+let editingId=null;
+
+const $=id=>document.getElementById(id);
+const fmt=d=>d?new Date(d).toLocaleDateString('zh-CN',{month:'short',day:'numeric'}):'';
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+const daysBetween=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
+const priWeight={high:3,mid:2,low:1};
+const priLabel={high:'高',mid:'中',low:'低'};
+
+function save(){localStorage.setItem(KEY,JSON.stringify(items))}
+
+function isOverdue(it){return !it.done && it.due && daysBetween(today(),it.due)<0}
+function isSoon(it){const d=daysBetween(today(),it.due);return !it.done && d>=0 && d<=2}
+
+function renderStats(){
+  const total=items.length;
+  const done=items.filter(i=>i.done).length;
+  const overdue=items.filter(isOverdue).length;
+  const pending=total-done-overdue;
+  $('stats').innerHTML=[
+    ['共',total],['待',pending],['逾期',overdue],['完',done]
+  ].map(([l,n])=>`<div class="stat-box"><span class="n">${n}</span><span class="l">${l}</span></div>`).join('');
+}
+
+function renderSubjects(){
+  const subs=[...new Set(items.map(i=>i.subject).filter(Boolean))].sort();
+  const cur=$('f-subject').value;
+  $('f-subject').innerHTML='<option value="">全部科目</option>'+
+    subs.map(s=>`<option value="${s}"${s===cur?' selected':''}>${s}</option>`).join('');
+}
+
+function render(){
+  renderStats(); renderSubjects();
+  const q=$('search').value.trim().toLowerCase();
+  const fs=$('f-status').value, fp=$('f-priority').value, fsub=$('f-subject').value, sort=$('sort').value;
+  let list=items.filter(i=>{
+    if(fs==='done'&&!i.done) return false;
+    if(fs==='pending'&&i.done) return false;
+    if(fs==='overdue'&&!isOverdue(i)) return false;
+    if(fp&&i.priority!==fp) return false;
+    if(fsub&&i.subject!==fsub) return false;
+    if(q&&!(i.title.toLowerCase().includes(q)||(i.notes||'').toLowerCase().includes(q))) return false;
+    return true;
+  });
+  list.sort((a,b)=>{
+    if(sort==='due')return (a.due||'9999').localeCompare(b.due||'9999');
+    if(sort==='priority')return priWeight[b.priority]-priWeight[a.priority];
+    if(sort==='subject')return (a.subject||'').localeCompare(b.subject||'');
+    return b.created-a.created;
+  });
+  const el=$('list');
+  if(list.length===0){
+    el.innerHTML=`<div class="empty"><div class="big">∅</div>没有作业，去玩一会儿吧</div>`;
+    return;
+  }
+  el.innerHTML=list.map(it=>{
+    const od=isOverdue(it), sn=isSoon(it);
+    let dueText='';
+    if(it.due){
+      const d=daysBetween(today(),it.due);
+      if(it.done) dueText=`${fmt(it.due)} 完成`;
+      else if(d<0) dueText=`逾期 ${-d} 天`;
+      else if(d===0) dueText='今天截止';
+      else if(d===1) dueText='明天截止';
+      else if(d<=2) dueText=`${d} 天后`;
+      else dueText=fmt(it.due);
+    }
+    return `
+    <div class="item${it.done?' done':''}${od?' overdue':''}" data-id="${it.id}">
+      <div class="check${it.done?' checked':''}" data-act="toggle">${it.done?'✓':''}</div>
+      <div class="body">
+        <div class="top-row">
+          ${it.subject?`<span class="subj">${it.subject}</span>`:''}
+          <span class="pri pri-${it.priority}">${priLabel[it.priority]}</span>
+          ${dueText?`<span class="due${od?' overdue-text':''}${sn?' soon':''}">${dueText}</span>`:''}
+        </div>
+        <h3>${escapeHtml(it.title)}</h3>
+        ${it.notes?`<p>${escapeHtml(it.notes)}</p>`:''}
+      </div>
+      <div class="actions">
+        <button class="icon-btn" data-act="edit" title="编辑">✎</button>
+        <button class="icon-btn" data-act="del" title="删除">✕</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function escapeHtml(s){return (s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+
+function openForm(id){
+  editingId=id||null;
+  const f=$('form'); f.classList.add('show');
+  if(id){
+    const it=items.find(x=>x.id===id);
+    $('i-title').value=it.title;
+    $('i-subject').value=it.subject||'';
+    $('i-due').value=it.due||'';
+    $('i-priority').value=it.priority;
+    $('i-notes').value=it.notes||'';
+  }else{
+    $('i-title').value=''; $('i-subject').value='';
+    $('i-due').value=''; $('i-priority').value='mid'; $('i-notes').value='';
+  }
+  $('i-title').focus();
+}
+function closeForm(){$('form').classList.remove('show'); editingId=null}
+
+function saveItem(){
+  const title=$('i-title').value.trim();
+  if(!title){alert('请填写标题');return}
+  const data={
+    title, subject:$('i-subject').value.trim(),
+    due:$('i-due').value, priority:$('i-priority').value,
+    notes:$('i-notes').value.trim()
+  };
+  if(editingId){
+    Object.assign(items.find(x=>x.id===editingId), data);
+  }else{
+    items.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,6), created:Date.now(), done:false, ...data});
+  }
+  save(); closeForm(); render();
+}
+
+$('list').addEventListener('click',e=>{
+  const itemEl=e.target.closest('.item'); if(!itemEl)return;
+  const id=itemEl.dataset.id;
+  const act=e.target.dataset.act;
+  if(act==='toggle'){
+    const it=items.find(x=>x.id===id); it.done=!it.done; if(it.done)it.completedAt=Date.now();
+    save(); render();
+  }else if(act==='edit'){
+    openForm(id);
+  }else if(act==='del'){
+    if(confirm('删除这条作业？')){
+      items=items.filter(x=>x.id!==id); save(); render();
+    }
+  }
+});
+
+$('add-btn').onclick=()=>openForm();
+$('save-btn').onclick=saveItem;
+$('cancel-btn').onclick=closeForm;
+$('search').oninput=render;
+$('f-status').onchange=render;
+$('f-priority').onchange=render;
+$('f-subject').onchange=render;
+$('sort').onchange=render;
+$('i-title').addEventListener('keydown',e=>{if(e.key==='Enter'&&e.ctrlKey)saveItem()});
+
+$('export-btn').onclick=()=>{
+  const blob=new Blob([JSON.stringify(items,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`homework-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+};
+$('import-btn').onclick=()=>$('file-input').click();
+$('file-input').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const arr=JSON.parse(r.result);
+      if(!Array.isArray(arr))throw 0;
+      if(confirm(`导入 ${arr.length} 条？将合并到现有数据。`)){
+        const ids=new Set(items.map(i=>i.id));
+        arr.forEach(x=>{if(x.id&&!ids.has(x.id))items.push(x)});
+        save(); render();
+      }
+    }catch(err){alert('文件格式错误')}
+  };
+  r.readAsText(f);
+};
+
+render();
+</script>
+</body>
+</html>
